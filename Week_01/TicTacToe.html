@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TicTacToe</title>
+  <style>
+    #msg {
+      color: green;
+    }
+    #board {
+      width: 312px;
+    }
+    .cell {
+      width: 100px;
+      height: 100px;
+      background-color: green;
+      display: inline-block;
+      border: solid 1px white;
+      vertical-align: middle;
+      line-height: 100px;
+      font-size: 50px;
+      text-align: center;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <div id='board'></div>
+  <div id="msg"></div>
+  <script>
+    const patterns = [
+      0,0,0,
+      0,0,0,
+      0,0,0
+    ];
+    const board = document.getElementById('board');
+    const msg = document.getElementById('msg');
+    const cells = [];
+    const molecule = 3;
+    let next = 1, win = false;
+    function show(molecule) {
+      for (let i = 0, j = 0, len = patterns.length; i < len; i++) {
+        const cell = document.createElement('div');
+        cell.classList.add('cell');
+        cell.setAttribute('data-i', i)
+        const piece = patterns[i];
+        cell.innerText = piece === 2?'X': piece === 1? 'O': '';
+        board.appendChild(cell);
+        cells.push(cell);
+        (j+1) * molecule === i && ++j;
+      }
+    };
+    function check(pattern, next, molecule) {
+      const len = pattern.length, winNum = next * molecule;
+      let x = 0,y = 0,letfSlash = 0, rightSlash = 0;
+      for (let i = 0, k = 0;  i < molecule; i++) {
+        for (let j = 0; j < molecule; j++) {
+          const index = i * molecule + j;
+          const xpiece = pattern[index] === next? next : (-20 * molecule);
+          const ypiece = pattern[i + molecule * j] === next? next : (-20 * molecule);
+          x += xpiece;
+          y += ypiece;
+          i === j && (letfSlash += xpiece);
+          (index !== 0 && index !== len - 1 && index % 2 === 0) && (rightSlash += xpiece);
+        }
+        if (x === winNum) {
+
+          return true
+        }
+        if (y === winNum) {
+
+          return true
+        }
+        x = 0;
+        y = 0;
+      }
+      if (letfSlash === winNum) {
+        return true
+      }
+      if (rightSlash === winNum) {
+        return true
+      }
+      return false
+    }
+    function clone(pattern) {
+      return Object.create(pattern)
+    }
+    function willWin(pattern, next, molecule) {
+      for (let i = 0;  i < molecule; i++) {
+        for (let j = 0;  j < molecule; j++) {
+          const index = i * molecule + j;
+          if (pattern[index])
+            continue;
+          const tmp = clone(pattern);
+          tmp[index] = next;
+          
+          if (check(tmp, next, molecule)) {
+            
+            return index;
+          }
+        }
+      }
+      return null
+    }
+    function baseChoice(pattern, next, molecule) {
+      let p = willWin(pattern, next, molecule);
+      if (p !== null) {
+        return {
+          point: p,
+          result: 1
+        }
+      }
+      let result = -1;
+      let point = null;
+      let start = null;
+      const len = pattern.length;
+      outer: for (let i = 0;  i < molecule; i++) {
+        for (let j = 0;  j < molecule; j++) {
+          const index = i * molecule + j;
+          if (pattern[index] !== 0)
+            continue;
+          (start === null) && (start = index)
+          const tmp = clone(pattern);
+          tmp[index] = next;
+          const res = baseChoice(tmp, 3 - next, molecule)
+          const r = res.result;
+          if (-r >= result) {
+            result = -r;
+            point = index;
+          }
+          if (result === 1) {
+            break outer
+          }
+        }
+      }
+      // if (point === null || point > pattern.length) {
+      //   console.log('平局');
+      // }
+      return {
+        point: point === null ? start : point,
+        result: point !== null ? result: 0
+      }
+    }
+    function draw(i, molecule) {
+      
+      const cell = cells[i];
+      patterns[i] = next
+      cell.innerText = next === 2?'X': 'O';
+      if (check(patterns, next, molecule)) {
+          win = true;
+          msg.innerText = next === 2?'X win': 'O win';
+      }
+      next = 3 - next;
+    }
+    
+    function cpmputerNext(molecule) {
+      if (win) {
+        return
+      }
+      const r = baseChoice(patterns, next, molecule);
+      const i = r.point;
+      
+      draw(i, molecule);
+      
+    }
+    function boardEvent() {
+      board.addEventListener('click', function (e) {
+        const target = e.target;
+        if (!win && target) {
+          const i = target.getAttribute('data-i');
+          let piece = patterns[i];
+          if (piece) {
+            return
+          }
+          draw(i, molecule);
+          cpmputerNext(molecule);
+        }
+      })
+    }
+    show(molecule);
+    boardEvent();
+  </script>
+</body>
+</html>
