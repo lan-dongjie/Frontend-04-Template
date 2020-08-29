@@ -8,18 +8,15 @@
     #msg {
       color: green;
     }
-    #board {
-      width: 312px;
-    }
     .cell {
-      width: 100px;
-      height: 100px;
+      width: 60px;
+      height: 60px;
       background-color: green;
       display: inline-block;
       border: solid 1px white;
       vertical-align: middle;
-      line-height: 100px;
-      font-size: 50px;
+      line-height: 60px;
+      font-size: 30px;
       text-align: center;
       color: white;
     }
@@ -29,26 +26,31 @@
   <div id='board'></div>
   <div id="msg"></div>
   <script>
-    const patterns = [
-      0,0,0,
-      0,0,0,
-      0,0,0
-    ];
     const board = document.getElementById('board');
     const msg = document.getElementById('msg');
     const cells = [];
-    const molecule = 3;
-    let next = 1, win = false;
+    const molecule = 5;
+    const patterns = [];
+    const specs = 15;//棋盘规格
+    const patternNum = 3;//截取多大的棋盘来做运算
+    let next = 1, win = false, step = 0;
+    for (let i = 0, boardmax = specs*specs; i < boardmax; i++) {
+      patterns.push(0);
+    }
+
     function show(molecule) {
       for (let i = 0, j = 0, len = patterns.length; i < len; i++) {
         const cell = document.createElement('div');
         cell.classList.add('cell');
-        cell.setAttribute('data-i', i)
+        cell.setAttribute('data-i', i);
         const piece = patterns[i];
-        cell.innerText = piece === 2?'X': piece === 1? 'O': '';
+        cell.innerText = piece === 2?'●': piece === 1? '○': '';
         board.appendChild(cell);
         cells.push(cell);
-        (j+1) * molecule === i && ++j;
+        if ( (j+1) * 15 === i+1) {
+          board.appendChild(document.createElement('br'));
+          ++j;
+        }
       }
     };
     function check(pattern, next, molecule) {
@@ -57,12 +59,25 @@
       for (let i = 0, k = 0;  i < molecule; i++) {
         for (let j = 0; j < molecule; j++) {
           const index = i * molecule + j;
-          const xpiece = pattern[index] === next? next : (-20 * molecule);
-          const ypiece = pattern[i + molecule * j] === next? next : (-20 * molecule);
-          x += xpiece;
-          y += ypiece;
-          i === j && (letfSlash += xpiece);
-          (index !== 0 && index !== len - 1 && index % 2 === 0) && (rightSlash += xpiece);
+          if (pattern[index] === next) {
+            x += next;
+            if (i === j) {
+              letfSlash += next
+            }
+            if (index !== 0 && index !== len - 1 && index % 2 === 0) {
+              rightSlash += next
+            }
+          } else {
+            x = 0;
+            letfSlash = 0;
+            rightSlash = 0;
+          }
+          if (pattern[i + molecule * j]) {
+            y += next;
+          } else {
+            y = 0
+          }
+          
         }
         if (x === winNum) {
 
@@ -143,29 +158,57 @@
       }
     }
     function draw(i, molecule) {
-      
+      step++;
       const cell = cells[i];
       if (!cell) {
+        console.log('i', i, next);
         return
       }
-      patterns[i] = next
-      cell.innerText = next === 2?'X': 'O';
-      if (check(patterns, next, molecule)) {
+      patterns[i] = next;
+      cell.innerText = next === 2?'●': '○';
+      if (step > 10 && check(patterns, next, molecule)) {
           win = true;
-          msg.innerText = next === 2?'X win': 'O win';
+          msg.innerText = next === 2?'● win': 'O win';
       }
       next = 3 - next;
     }
-    
-    function cpmputerNext(molecule) {
+    function getPattern(i, molecule, specs, patternNum, basePatterns) {
+      let ls = 0, re = molecule - 1, bs = molecule * specs - 1, be = bs + molecule;
+      let offsetNum = Math.floor(patternNum / 2);
+      let row = Math.floor(i / specs);
+      let col = i % specs;
+      if (row - offsetNum < 0) {
+        row = 0;
+      } else if (row + offsetNum >= specs) {
+        row = specs - offsetNum - 1;
+      } else {
+        row = row - offsetNum 
+      }
+      if (col - offsetNum < 0) {
+        col = 0;
+      } else if (col + offsetNum >= specs) {
+        col = specs - offsetNum - 1;
+      } else {
+        col = col - offsetNum 
+      }
+      const newPatterns = [];
+      const indexs = []
+      const len = (patternNum + row - 1) * specs + col + patternNum;
+      for (let j = (row * specs) + col; j < len; j+= specs) {
+        for (let k = 0; k < patternNum; k++) {
+          newPatterns.push(basePatterns[j + k]);
+          indexs.push(j + k);
+        }
+      }
+      return {newPatterns, indexs};
+    }
+    function cpmputerNext(patterns, molecule, indexs) {
       if (win) {
         return
       }
       const r = baseChoice(patterns, next, molecule);
       const i = r.point;
-      
-      draw(i, molecule);
-      
+      draw(indexs[i], molecule);
     }
     function boardEvent() {
       board.addEventListener('click', function (e) {
@@ -173,16 +216,19 @@
         if (!win && target) {
           const i = target.getAttribute('data-i');
           let piece = patterns[i];
-          if (piece) {
+          if (piece || i === null) {
             return
           }
+          console.log('9999999999', target, i, piece);
           draw(i, molecule);
-          cpmputerNext(molecule);
+          const {newPatterns, indexs} = getPattern(i,next, specs, patternNum, patterns);
+          cpmputerNext(newPatterns, molecule, indexs);
         }
       })
     }
     show(molecule);
     boardEvent();
+
   </script>
 </body>
 </html>
