@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LL</title>
+</head>
+<body>
+  <div id="Dom">
+
+  </div>
+  <script>
+    const reg = /([0-9\.]+)|([ \t]+)|([\r\n]+)|(\*)|(\/)|(\+)|(\-)/g
+    const dictionary = ['Number', 'Whiltespace', 'LineTerminator', '*', '/', '+', '-'];
+
+    function* tokenize(source) {
+      let res = null, lastIndex = 0;
+
+      while (true) {
+        lastIndex = reg.lastIndex
+        res = reg.exec(source);
+        if (!res) {
+          break;
+        }
+        if (reg.lastIndex - lastIndex > res[0].length) {
+          break;
+        }
+        let token = {
+          type: null,
+          value: null,
+        }
+
+        for (let i = 1, len = dictionary.length; i <= len; i++) {
+          if (res[i]) {
+            token.type = dictionary[i - 1]
+          }
+        }
+        token.value = res[0];
+        yield token;
+      }
+      yield {
+        type: 'EOF'
+      }
+    }
+    const str = '1234 - 99 * 88';
+    let strSource = [];
+    Dom.innerHTML = str;
+    for (const token of tokenize(str)) {
+      if (!['Whiltespace', 'LineTerminator'].includes(token.type)) {
+        strSource.push(token)
+      }
+      const P = document.createElement('p');
+      P.innerText = `type: ${token.type},value: ${token.value}`;
+      Dom.appendChild(P);
+    }
+    console.log(strSource);
+
+
+    function AdditiveExpression(source) {
+
+    }
+
+    function MultiplicativeExpression(source) {
+      const className = 'MultiplicativeExpression'
+      if (source[0].type === 'Number') {
+        let node = {
+          type: className,
+          children: [source[0]]
+        }
+        source[0] = node;
+        return MultiplicativeExpression(source);
+      }
+
+      if (source[0].type === className && source[1]) {
+        if (source[1].type === '*') {
+          let node = {
+            type: className,
+            operator: '*',
+            children: []
+          }
+          node.children.push(source.shift());
+          node.children.push(source.shift());
+          node.children.push(source.shift());
+          source.unshift(node);
+          return MultiplicativeExpression(source);
+        }
+
+        if (source[1].type === '/') {
+          let node = {
+            type: className,
+            operator: '/',
+            children: []
+          }
+          node.children.push(source.shift());
+          node.children.push(source.shift());
+          node.children.push(source.shift());
+          source.unshift(node);
+          return MultiplicativeExpression(source);
+        }
+      }
+      if (source[0].type === className) {
+        return source[0];
+      }
+      return MultiplicativeExpression(source);
+    }
+    console.log(MultiplicativeExpression(strSource));
+    
+  </script>
+</body>
+</html>
