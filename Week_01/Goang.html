@@ -53,48 +53,135 @@
         }
       }
     };
-    function check(pattern, next, molecule) {
+    function check(pattern, next, molecule, specs) {
+      const m = specs || molecule
+      specs && console.log('specs', m);
       const len = pattern.length, winNum = next * molecule;
       let x = 0,y = 0,letfSlash = 0, rightSlash = 0;
-      for (let i = 0, k = 0;  i < molecule; i++) {
-        for (let j = 0; j < molecule; j++) {
-          const index = i * molecule + j;
+      for (let i = 0; i < m; i++) {
+        for (let j = 0; j < m; j++) {
+          const index = i * m + j;
           if (pattern[index] === next) {
             x += next;
-            if (i === j) {
-              letfSlash += next
-            }
-            if (index !== 0 && index !== len - 1 && index % 2 === 0) {
-              rightSlash += next
-            }
           } else {
             x = 0;
-            letfSlash = 0;
-            rightSlash = 0;
           }
-          if (pattern[i + molecule * j]) {
+          if (i === j) {
+            if (pattern[index] === next) {
+              letfSlash += next
+            } else {
+              letfSlash = 0;
+            }
+          }
+          if (index !== 0 && index !== len - 1 && index % 2 === 0) {
+            if (pattern[index] === next) {
+              rightSlash += next;
+            } else {
+              rightSlash = 0
+            }
+          }
+          if (pattern[i + m * j] === next) {
             y += next;
           } else {
             y = 0
+          }      
+          if (x === winNum) {
+
+            return true
           }
-          
+          if (y === winNum) {
+            return true
+          }
         }
-        if (x === winNum) {
-
-          return true
-        }
-        if (y === winNum) {
-
-          return true
-        }
-        x = 0;
-        y = 0;
       }
       if (letfSlash === winNum) {
         return true
       }
       if (rightSlash === winNum) {
         return true
+      }
+      return false
+    }
+    function checkLeft(pattern, next, molecule, specs, ii) {
+      const row = Math.floor(ii / specs);
+      const col = ii % specs,winNum = next * molecule;
+      const s = col - row ? col - row : 0
+      const e = col - row ? 0 : row - col;
+      let letfSlash = 0
+      console.log('lll',row, col, s, e );
+      for (let i = e, j = s; i < specs && j < specs; i++,j++) {
+          const index = i * specs + j;
+          if (pattern[index] === next) {
+            letfSlash += next;
+          } else letfSlash = 0;
+
+          if (letfSlash === winNum) {
+            return true
+          }
+      }
+      return false
+    }
+    function checkRight(pattern, next, molecule, specs, ii) {
+      const row = Math.floor(ii / specs);
+      const col = ii % specs,winNum = next * molecule;
+      const s = (col + row) < specs  ? col + row : specs
+      const e = (col + row) < specs ? 0 : (row - col);
+      let rightSlash = 0;
+      console.log('yyy',row, col, s, e );
+      for (let i = e, j = s; i < specs && j >= 0; i++,j--) {
+          const index = i * specs + j;
+          if (pattern[index] === next) {
+            rightSlash += next;
+          } else rightSlash = 0;
+
+          if (rightSlash === winNum) {
+            return true
+          }
+      }
+      return false
+    }
+    function checkBase(pattern, next, molecule, specs, ii) {
+      const m = specs || molecule
+      const len = pattern.length, winNum = next * molecule;
+      let x = 0,y = 0,letfSlash = 0, rightSlash = 0;
+      const left = [], right = [];
+      for (let i = 0; i <= molecule - 2; i++) {
+        for (let j = molecule - 2 - i; j >= 0; j--) {
+          left.push(i * specs + j);
+          left.push((specs - i) * specs - 1 - j);
+          right.push((specs - i - 1) * specs + j);
+          right.push((1 + i) * specs - 1 - j);
+        }
+      }
+      if (!left.includes(ii) && checkLeft(pattern, next, molecule, specs, ii)) {
+         return true
+      }
+      if (!right.includes(ii) && checkRight(pattern, next, molecule, specs, ii)) {
+        return true
+      }
+      
+      for (let i = 0; i < m; i++) {
+        for (let j = 0; j < m; j++) {
+          const index = i * m + j;
+          if (pattern[index] === next) {
+            x += next;
+          } else {
+            x = 0;
+          }
+          if (pattern[i + m * j] === next) {
+            y += next;
+          } else {
+            y = 0
+          }      
+          if (x === winNum) {
+
+            return true
+          }
+          if (y === winNum) {
+            return true
+          }
+         
+        }
       }
       return false
     }
@@ -158,15 +245,13 @@
       }
     }
     function draw(i, molecule) {
-      step++;
       const cell = cells[i];
       if (!cell) {
-        console.log('i', i, next);
         return
       }
       patterns[i] = next;
       cell.innerText = next === 2?'●': '○';
-      if (step > 10 && check(patterns, next, molecule)) {
+      if (checkBase(patterns, next, molecule, specs, i)) {
           win = true;
           msg.innerText = next === 2?'● win': 'O win';
       }
@@ -200,13 +285,14 @@
           indexs.push(j + k);
         }
       }
+      console.log('----', newPatterns);
       return {newPatterns, indexs};
     }
-    function cpmputerNext(patterns, molecule, indexs) {
+    function cpmputerNext(patterns, patternNum, indexs) {
       if (win) {
         return
       }
-      const r = baseChoice(patterns, next, molecule);
+      const r = baseChoice(patterns, next, patternNum);
       const i = r.point;
       draw(indexs[i], molecule);
     }
@@ -219,10 +305,9 @@
           if (piece || i === null) {
             return
           }
-          console.log('9999999999', target, i, piece);
           draw(i, molecule);
           const {newPatterns, indexs} = getPattern(i,next, specs, patternNum, patterns);
-          cpmputerNext(newPatterns, molecule, indexs);
+          cpmputerNext(newPatterns, patternNum, indexs);
         }
       })
     }

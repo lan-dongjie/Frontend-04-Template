@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QuickSort 动画演示</title>
+  <style>
+    .cell {
+      width: 80px;
+      height: 30px;
+      background-color: green;
+      display: inline-block;
+      border: solid 1px white;
+      vertical-align: middle;
+      line-height: 30px;
+      font-size: 9px;
+      text-align: center;
+      color: white;
+    }
+    .quick {
+      width: 80px;
+      height: 30px;
+      position: absolute;
+      top: 25px;
+      background-color: rgb(119, 128, 0);
+      display: inline-block;
+      border: solid 1px white;
+      vertical-align: middle;
+      line-height: 30px;
+      font-size: 9px;
+      text-align: center;
+      color: white;
+      transition: all 0.8s;
+    }
+
+    .cell.quick {
+      background-color: green;
+      color: white;
+    }
+
+    .box {
+      position: relative;
+      padding-bottom: 40px;
+      height: 80px;
+    }
+
+    .point {
+      width: 10px;
+      height: 30px;
+      position: absolute;
+      background-color: rgba(243, 8, 59, 0.438);
+      top: -15px;
+      left: 40px;
+      transform: translate(-50%, 0%);
+      transition: all 1s;
+    }
+
+    .anim {
+      width: 80px;
+      height: 60px;
+      position: absolute;
+      line-height: 30px;
+      text-align: center;
+      top: 0;
+      background-color: rgb(0, 87, 128);
+      color: white;
+      transition: all 1s;
+    }
+  </style>
+</head>
+<body>
+  <div id="Dom"></div>
+  <script>
+    const num = 10, arr = [], cells = [];
+    let step = 0;
+
+    function creatElement(arr, num) {
+      const ranPivot = num > 10000? num : 10000;
+      const box = document.createElement('div');
+      box.innerText = '初始数组:\n';
+      for (let i = 0; i < num; i++) {
+        const cell = document.createElement('div');
+        cell.classList.add('cell');
+        const n = Math.floor(Math.random() * ranPivot)
+        arr.push(n);
+        cell.innerText = n;
+        cells.push(cell);
+        box.appendChild(cell);
+      }
+      Dom.appendChild(box);
+      Dom.appendChild(document.createTextNode('\n排序:\n'));
+    }
+
+    async function animation(arr, left, right) {
+      step++;
+      const box = document.createElement('div');
+      box.classList.add('box');
+      box.setAttribute('id', 'step-' + step);
+      const point = document.createElement('div');
+      point.classList.add('point');
+      const anim = document.createElement('div');
+      anim.classList.add('anim');
+      anim.id = 'anim' + step
+      for (let i = 0; i < arr.length; i++) {
+        const cell = document.createElement('div');
+        cell.classList.add('quick');
+        if (!(i >= left && i<= right)) {
+          cell.classList.add('cell');
+        }
+        cell.id = `cell-${step}-${i}`;
+        cell.setAttribute('style', `left: ${i * 82}px;`);
+        cell.innerText = arr[i];
+        box.appendChild(cell);
+      }
+      anim.innerText = arr[left];
+      Dom.appendChild(document.createTextNode(`\nstep:${step}`));
+      box.appendChild(anim);
+      box.appendChild(point);
+      Dom.appendChild(box);
+      anim.setAttribute('style', `left: ${left * 82}px;`);
+      point.setAttribute('style', `left: ${(left + 0.5) * 82}px;`);
+      await sleep(650);
+      box.children[left].innerText = '';
+      anim.setAttribute('style', `top: 60px;left: ${left * 82}px;`);
+      await sleep(1000);
+    }
+    
+    async function swap(arr, i, j, s) {
+      if (i === j) {
+        return
+      }
+      const tmp = arr[i];
+      arr[i] = arr[j];
+      arr[j] = tmp;
+      const box = document.getElementById(`step-${s}`);
+      const cellLeft = box.querySelector(`#cell-${s}-${i}`);
+      const cellright = box.querySelector(`#cell-${s}-${j}`);
+      // cellright.innerText = arr[i];
+      cellLeft.setAttribute('style', `left: ${j * 82}px;`);
+      cellright.setAttribute('style', `left: ${i * 82}px;`);
+      cellLeft.id = `cell-${s}-${j}`;
+      cellright.id = `cell-${s}-${i}`;
+      await sleep(1200);
+    }
+
+    function sleep(t) {
+      return new Promise(resolve => {
+        setTimeout(resolve, t);
+      })
+    }
+
+    async function QuickSort(arr, left, right, comper) {
+      if (left >= right) {
+        return
+      }
+      await animation(arr, left, right);
+      // await sleep(1200);
+      comper = comper || ((pivot, n) => (n < pivot));
+      let pivot = arr[left], nowIndex = left;
+      const anim = document.getElementById('anim' + step);
+      const point = document.getElementById('step-' + step).lastChild;
+      for (let i = left + 1; i <= right; i++) {
+        anim.setAttribute('style', `top: 60px;left: ${i * 82}px;`);
+        const n = arr[i];
+        await sleep(1200);
+        anim.innerText = `${pivot}\n${n}`;
+        await sleep(300);
+        if (comper(pivot, n)) {
+          swap(arr, i, nowIndex + 1, step);
+          ++nowIndex;
+          point.setAttribute('style', `left: ${(nowIndex + 0.5) * 82}px;`);
+        }
+        await sleep(600);
+        anim.innerText = pivot;
+      }
+      // arr[nowIndex] = pivot;
+      swap(arr, left, nowIndex, step);
+      anim.setAttribute('style', `top: 25px;left: ${nowIndex * 82}px;height: 30px;`);
+      await sleep(1200);
+      await QuickSort(arr, left, nowIndex - 1);
+      await QuickSort(arr, nowIndex + 1, right);
+    }
+
+    function showResult(arr) {
+      const box = document.createElement('div');
+      for (let i = 0; i < arr.length; i++) {
+        const cell = document.createElement('div');
+        cell.classList.add('cell');
+        cell.innerText = arr[i];
+        cells.push(cell);
+        box.appendChild(cell);
+      }
+      Dom.appendChild(document.createTextNode('\n排序结果:\n'));
+      Dom.appendChild(box);
+    }
+
+    async function init() {
+      creatElement(arr, num);
+      await QuickSort(arr, 0, arr.length-1);
+      showResult(arr);
+    }
+
+    init();
+  </script>
+</body>
+</html>
