@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KMP</title>
+</head>
+<body>
+  <div>
+    source：<input id="source" type="text" value="ababababce">
+    <br/>
+    pattern：<input id="pattern" type="text" value="ababc">
+    <br/>
+    <button onclick="clickFn()">KMP</button>
+    <br/>
+    <div id="msg"></div>
+  </div>
+  <script src="./js/KMP.js"></script>
+  <script>
+    function clickFn() {
+      console.log('v');
+      const res = kmp(source.value, pattern.value);
+      msg.innerText = res;
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reactive</title>
+</head>
+<body>
+  R<input id="R" type="range" min="0" max="255">
+  G<input id="G" type="range" min="0" max="255">
+  B<input id="B" type="range" min="0" max="255">
+  A<input id="A" type="range" min="0" max="100">
+  <div id="RGBA" style="width: 100px; height: 100px;"></div>
+  <script src="./js/reactive.js"></script>
+  <script>
+    const color = {
+      a: 100,
+      r: 4,
+      g: 1,
+      b: 4,
+    }
+    const p = reactive(color);
+
+    effect(() => {
+      R.value = p.r
+      G.value = p.g
+      B.value = p.b
+      A.value = p.a
+    })
+    effect(() => {
+      RGBA.style.backgroundColor = `rgba(${p.r},${p.g},${p.b},${p.a / 100})`
+    })
+
+    document.addEventListener('input', e => {
+      p[e.target.id.toLowerCase()] = e.target.value;
+    })
+
+  </script>
+</body>
+</html>

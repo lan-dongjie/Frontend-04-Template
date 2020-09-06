@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DragRange</title>
+  <style>
+    #DragBox {
+      width: 100px;
+      height: 100px;
+      display: inline-block;
+      background-color: hotpink;
+    }
+  </style>
+</head>
+<body>
+  <div id="Box">
+    柴犬头塞纸箱变身推土机，娃娃全丟掉，只为找最爱的啾啾棒球！
+    
+    我和宠物的日常
+    
+    发布时间：09-0217:41广州市十万信息科技官方帐号
+    柴犬Happy拖着一大箱满出来的玩偶，却把娃娃一只只丢出来没有想玩的意思，原来它一心一意想拿的是妈妈新买的球球！饲主表示，Happy超爱啾啾球，最近到哪都带着那颗球，很珍惜地保护着。
+    
+    
+    照片中，Happy拖着玩偶箱，先是把猪猪玩偶丢掉，再甩开宝贝球跟小猪玩偶，接着把挡路的「乔治猪」咬开，努力到直接把整个箱子戴在头上，终于拿到心心念念的啾啾棒球，这时才满足地叼着爱球走来走去。
+    
+    
+    
+    
+    
+    快9岁的Happy是个球控，很喜欢玩接球游戏，虽然平常也爱娃娃，但妈妈新买的啾啾棒球深得它心。主人笑说，只要是球Happy都很珍惜很「念旧」，这次刚好看到新的款式，Happy玩得开心她也很有成就感。
+    
+    
+    
+    饲主在Happy4岁时领养回家，她说Happy是只「天使柴」，除了不亲狗，其他任何事都很好沟通，「洗澡、剪指甲、挖耳朵都OK，打针也不会怕，真的是很乖的宝贝。」
+    
+    
+    许多网友看到Happy如此坚持的模样，笑说「果然是柴柴」、「我柴我坚持！」，也有不少养柴奴才发现Happy的玩具很完整相当羡慕，主人回应，Happy很爱惜娃娃，「有时候我要汰旧换新它都咬回来不让我丢，只能趁它不注意偷丢。」
+    
+    
+    举报/反馈
+    作者最新文章
+    好有爱的公司，贪吃猫偷走鸡腿，副总急发补偿申明捍卫员工！
+    坐月子期间让老公帮拍猫照，结果收到老公传来的猫咪照片超傻眼！
+    牧羊犬痛失宝宝陷低潮，后来3只小奶猫让它奇迹转变！
+    相关文章
+    养猫的10个扎心日常，太真实了！
+    
+    为什么要养狗？这8点，不养狗是永远都体会不到的！
+    
+    养猫的好处有哪些？养过猫的人都知道！
+    
+    “高冷猫”从来不喜欢亲近家人，却在关键时刻救了父亲一命！
+    
+    猫咪看人也分等级，出现这些动作，铲屎官需要反思了！
+    
+    
+    </div>
+  <div id="DragBox"></div>
+  <script>
+    let lastX = lastY = 0;
+    DragBox.addEventListener('mousedown', e => {
+      let startX = e.clientX;
+      let startY = e.clientY;
+      
+      const move = e => {
+        const range = getNearest(e.clientX, e.clientY);
+        range.insertNode(DragBox);
+        // DragBox.style.transform = `translate(${lastX + e.clientX - startX}px, ${lastY + e.clientY - startY}px)`
+      }
+      const up = e => {
+        lastX += e.clientX - startX;
+        lastY += e.clientY - startY;
+        document.removeEventListener('mousemove', move);
+        document.removeEventListener('mouseup', up);
+      }
+
+      document.addEventListener('mousemove', move);
+      document.addEventListener('mouseup', up);
+    })
+    document.addEventListener('selectstart', e => e.preventDefault());
+
+    const ranges = [];
+    const textNodes = Box.childNodes[0];
+    for (let i = 0; i < textNodes.textContent.length; i++) {
+      const range = document.createRange();
+      range.setStart(textNodes, i);
+      range.setEnd(textNodes, i);
+
+      ranges.push(range);
+    }
+
+    function getNearest(x, y) {
+      let min = Infinity;
+      let nearest = null
+      for (let i = 0; i < ranges.length; i++) {
+        const range = ranges[i];
+        const rect = range.getBoundingClientRect();
+        const distance = (x - rect.x) ** 2 + (y - rect.y) ** 2;
+        if (min > distance) {
+          min = distance;
+          nearest = range;
+        }
+      }
+      return nearest
+    }
+
+  </script>
+</body>
+</html>
