@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wildcard</title>
+</head>
+<body>
+  <div>
+    source：<input id="source" type="text" value="abcabcabxabc">
+    <br/>
+    pattern：<input id="pattern" type="text" value="a*b*bx*c">
+    <br/>
+    <button onclick="clickFn()">Wildcard</button>
+    <br/>
+    <div id="msg"></div>
+  </div>
+  <script>
+    function find(source, pattern) {
+      let startCount = 0
+      for (let i = 0; i < pattern.length; i++) {
+        pattern[i] === '*' && startCount ++;
+      }
+
+      if (startCount === 0) {
+        for (let i = 0; i < pattern.length; i++) {
+          const element = array[i];
+          if (pattern[i] !== source[i] && pattern[i] !== '?') {
+            return '01'
+          }
+        }
+        return '00'
+      }
+
+      let lastIndex = 0, i = 0;
+
+      for (i = 0; i < pattern.length && pattern[i] !== '*'; i++) {
+        if (pattern[i] !== source[i] && pattern[i] !== '?') {
+          return '02'
+        }
+      }
+
+      lastIndex = i;
+
+      for (let p = 0; p < startCount - 1; p++) {
+        i++;
+        let subPattern = '';
+
+        while (pattern[i] !== '*') {
+          subPattern += pattern[i];
+          i++;
+        }
+        // \s\S:匹配所有字符，\s、\S互补
+        let reg = new RegExp(subPattern.replace(/\?/g, '[\\s\\S]'), 'g');
+        // 将lastIndex给正则，exec可以从lastIndex开始继续寻找
+        reg.lastIndex = lastIndex;
+        if (!reg.exec(source)) {
+          return '03'
+        }
+        lastIndex = reg.lastIndex;
+      }
+      console.log('lastIndex',lastIndex);
+      for (let j = 0;
+        j <= source.length - lastIndex &&
+        pattern[pattern.length - j] !== '*';
+        j++) {
+        if (pattern[pattern.length - j] !== source[source.length - j] &&
+            pattern[pattern.length - j] !== '?') {
+          return '04'
+        }
+      }
+      return true
+    }
+    function clickFn() {
+      const res = find(source.value, pattern.value);
+      msg.innerText = res;
+    }
+  </script>
+</body>
+</html>
