@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>traffic light</title>
+  <style>
+    #light {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+    }
+  </style>
+</head>
+<body>
+  <div id="light"></div>
+  <script>
+    function changeLight(color, t) {
+      light.style.backgroundColor = color;
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          resolve();
+        }, t)
+      })
+    }
+    async function trafficLight() {
+      await changeLight('green', 3000);
+      await changeLight('yellow', 3000);
+      await changeLight('red', 3000);
+      await trafficLight();
+    }
+    trafficLight();
+  </script>
+</body>
+</html>

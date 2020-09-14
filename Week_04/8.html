@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>String to UTF-8_Encoding</title>
+</head>
+<body>
+  <input type="text" id="STR">
+  <div id="Msg"></div>
+  <script>
+    function getStringBytes(str) {
+      if (!str) {
+        return 0
+      }
+      let len = str.length,bytes = len;
+      for (let i = 0; i < len; i++) {
+        const num = str.charCodeAt(i);
+        if ( num > 255) {
+          bytes ++;
+        }
+      }
+      return bytes;
+    }
+
+    function getCode(s, num, byte) {
+      const p = document.createElement('p');
+      const k = document.createElement('button');
+      k.innerText = `${s}：`;
+      p.appendChild(k);
+      const bufs = {
+        1: ['0xxxxxxx'],
+        2: ['110xxxxx', '10xxxxxx'],
+        3: ['1110xxxx', '10xxxxxx', '10xxxxxx'],
+        4: ['11110xxx', '10xxxxxx', '10xxxxxx', '10xxxxxx', '10xxxxxx'],
+        5: ['111110xx', '10xxxxxx', '10xxxxxx', '10xxxxxx', '10xxxxxx'],
+        6: ['1111110x', '10xxxxxx', '10xxxxxx', '10xxxxxx', '10xxxxxx', '10xxxxxx'],
+      }
+      const arr = bufs[byte];
+      let index = 0;
+      const m = num.toString(2);
+      console.log('m', m, num);
+      for (let i = 0; i < byte; i++) {
+        const span = document.createElement('span');
+        span.innerText = '--';
+        p.appendChild(span);
+        const a = arr[i];
+        for (let j = 0; j < 8; j++) {
+          const b = document.createElement('button');
+
+          if (a[j] === 'x') {
+            if (m[index]) {
+              b.innerText = m[index]
+            } else {
+              b.innerText = 0
+            }
+          } else {
+            b.innerText = a[j];
+          }
+          index ++;
+          p.appendChild(b);
+        }
+      }
+      Msg.appendChild(p)
+    }
+
+    function UTF8Encoding(str) {
+      if (!str) {
+        return
+      }
+      const byteRange = {
+        1: [0, 127],
+        2: [128, 2047],
+        3: [2048, 0xFFFF],
+        4: [65536, 0x1FFFFF],
+        5: [0x200000, 0x3FFFFFF],
+        6: [0x4000000, 0x7FFFFFFF],
+      }
+      let len = str.length, res = [], bytes = 0;
+      for (let i = 0; i < len; i++) {
+        const num = str.charCodeAt(i);
+        for (const k in byteRange) {
+          const [s, e] = byteRange[k];
+          if (s<= num && num <= e) {
+            getCode(str[i], num, k);
+          }
+        }
+      }
+      return res;
+    }
+
+    document.addEventListener('input', e => {
+      Msg.innerHTML = '';
+      UTF8Encoding(e.target.value);
+    })
+  </script>
+</body>
+</html>

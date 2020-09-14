@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>dog</title>
+</head>
+<body>
+  <button onclick="start(eh, a)">start</button>
+  <div id="msg"></div>
+  <script>
+    function start(dog, per) {
+      msg.innerHTML = ''
+      dog.seePerson(per);
+    }
+    function AddMsg(content) {
+      const p = document.createElement('p');
+      p.innerText = content;
+      msg.appendChild(p);
+    }
+    
+    class Dog {
+      constructor(name, state) {
+        this.name = name || '狗'
+        this.state = state || {
+          hasBitePerson: false,
+          attackPower: 300,
+          BiteProbability: 0.2,
+          barkProbability: 0.1
+        }
+      }
+      getName() {
+        return this.name
+      }
+      getAttackPower() {
+        return this.state.attackPower;
+      }
+      getName() {
+        return this.name
+      }
+
+      bite(Person) {
+        AddMsg(`${this.name}咬了${Person.getName()}...`);
+        const max = 10000;
+        Person.BittenByWhat(this);
+        this.state.hasBitePerson = true;
+        this.state.BiteProbability += 0.1;
+        setTimeout(() => {
+          const ran = Math.random() * max;
+          let biteRan = max * this.state.BiteProbability;
+          if (ran < biteRan) {
+            this.bite(Person);
+          }
+        }, 1000)
+      }
+
+      bark(Person) {
+        AddMsg(`${this.name}冲${Person.getName()}: 汪！`);
+        Person.beBbarkByWhat(this);
+        const max = 10000;
+        setTimeout(() => {
+          const ran = Math.random() * max;
+          let barkRan = max * this.state.barkProbability;
+          if (ran < barkRan) {
+            this.bark(Person);
+          }
+        }, 300)
+      }
+
+      seePerson(Person) {
+        const max = 10000;
+        const ran = Math.random() * max;
+        let biteRan = max * this.state.BiteProbability;
+        let barkRan = biteRan + max * this.state.barkProbability;
+        if (ran < biteRan) {
+          this.bite(Person)
+        } else if (ran < barkRan) {
+          this.bark(Person);
+        } else {
+          AddMsg('路过');
+        }
+      }
+
+    }
+
+    class Person {
+      constructor(name, state) {
+        this.name = name || '大哥'
+        this.state = state || {
+          gettingHurt: 0,
+          dead: false,
+          maxBlood: 100000,
+          restore: 20,
+        }
+        this.bittenBy = [];
+
+        this.check = setInterval(() => {
+          this.isDead();
+        }, 1000);
+      }
+
+      getName() {
+        return this.name
+      }
+
+      beBbarkByWhat(what) {
+        if (this.dead) {
+          return
+        }
+        AddMsg(`${this.name}冲${what.getName()}：Two！`);
+      }
+
+      BittenByWhat(what) {
+        if (this.state.dead) {
+          return
+        }
+        AddMsg(`${this.name}：啊！！！`);
+        this.state.gettingHurt += what.getAttackPower();
+        this.bittenBy.push({name: what.getName(), time: new Date()});
+      }
+      
+      isDead() {
+        this.state.gettingHurt -= this.state.restore;
+        if (this.state.gettingHurt < 0) {
+          this.state.gettingHurt = 0;
+        }
+        if (this.state.gettingHurt > this.state.maxBlood * 0.75) {
+          this.state.dead = true;
+          clearInterval(this.check);
+          this.check = null
+          AddMsg(`${this.name}死亡`);
+        }
+      }
+    }
+
+    const eh = new Dog('二哈', {
+      hasBitePerson: false,
+      attackPower: 30000,
+      BiteProbability: 0.5,
+      barkProbability: 0.1
+    })
+
+    const a = new Person('二')
+    start(eh, a);
+    
+  </script>
+</body>
+</html>

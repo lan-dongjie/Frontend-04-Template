@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>形式语言分类</title>
+  <style>
+    * {padding: 0;margin: 0;cursor: pointer;}
+    html, body{width: 100%;height: 100%;}
+    ul, li {list-style: none;}
+    ul {height: 100px;overflow-y: scroll;}
+    li {padding: 5px 10px;display: inline-block;border: 1px solid #333;margin-right: 10px;}
+    p {text-align: center;}
+    #Box {height: calc(100% - 130px);}
+    .drag {position: fixed;padding: 5px 10px;transform: translate(-50%, -50%);cursor: pointer;width: auto;border: 1px solid springgreen;}
+    .flex {height: 100%; display: flex;border-right: 1px solid gray;}
+    .flex-1 { flex: 1;height: calc(100% - 30px);}
+    .cell {height: 100%;overflow-y: scroll;}
+    .cell > div {padding: 2px 10px;border-bottom: 1px solid #999;}
+    .cell.active {border: 1px dashed gray;}
+    .res {width: 20;padding: 10px;}
+    textarea {width: 100%;height: calc(100% - 30px);}
+    .top button {padding: 2px 5px;margin: 0 10px;}
+  </style>
+</head>
+<body>
+  <p class="top"><input type="text" id="lanInput" ><button onclick="add()">add</button><button onclick="getLanguages()">获取最新数据结构</button><span id="GetLan"></span></p>
+  <ul id="Lan"></ul>
+  <div id="Box" class="flex">
+    <div class="flex-1">
+      <p>按用途分类</p>
+      <div class="flex">
+        <div class="flex-1">
+          <p>数据描述语言</p>
+          <div class="cell" data-t="type,1"></div>
+        </div>
+        <div class="flex-1">
+          <p>编程语言</p>
+          <div class="cell"  data-t="type,2"></div>
+        </div>
+      </div>
+    </div>
+    <div class="flex-1">
+      <p>按表达方式用分类</p>
+      <div class="flex">
+        <div class="flex-1">
+          <p>声明式语言</p>
+          <div class="cell"  data-t="type1,3"></div>
+        </div>
+        <div class="flex-1">
+          <p>命令式语言</p>
+          <div class="cell"  data-t="type1,4"></div>
+        </div>
+      </div>
+    </div>
+    <div class="res">
+      <p><button onclick="getResult()">生成结果</button><span id="Msg"></span></p>
+      <textarea id="Res"></textarea>
+    </div>
+  </div>
+  <div id="Drag" class="drag"></div>
+  <!-- <script src="./js/languages.js"></script> -->
+  <script>
+    const Languages = [{"name":"JSON","type":1,"type1":3},{"name":"HTML","type":1,"type1":3},{"name":"XAML","type":1,"type1":3},{"name":"SQL","type":1,"type1":3},{"name":"CSS","type":1,"type1":3},{"name":"C","type":2,"type1":4},{"name":"C++","type":2,"type1":4},{"name":"Java","type":2,"type1":4},{"name":"C#","type":2,"type1":4},{"name":"Python","type":2,"type1":4},{"name":"Ruby","type":2,"type1":4},{"name":"Perl","type":2,"type1":4},{"name":"Lisp","type":2,"type1":3},{"name":"T-SQL","type":2,"type1":4},{"name":"Clojure","type":2,"type1":3},{"name":"Haskell","type":2,"type1":3},{"name":"JavaScript","type":2,"type1":4},{"name":"PHP","type":"2","type1":"4"},{"name":"Lua","type":"2","type1":"4"},{"name":"(Visual)Basic","type":"2","type1":"4"},{"name":"D","type":"2","type1":"4"},{"name":"PL/SQL","type1":"4","type":"2"},{"name":"SAS","type":"2","type1":"4"},{"name":"Logo","type1":"3","type":"2"},{"name":"Pascal","type":"2","type1":"4"},{"name":"ABAP","type":"2","type1":"4"},{"name":"ActionScript","type":"2","type1":"4"},{"name":"RPG(AS/400)","type1":"3","type":"1"},{"name":"Swift","type":"2","type1":"4"},{"name":"Objective-C","type":"2","type1":"4"},{"name":"MATLAB","type":"2","type1":"3"},{"name":"Scratch"},{"name":"Ada","type1":"4","type":"2"},{"name":"Fortran","type":"2","type1":"4"},{"name":"Go","type":"2","type1":"4"},{"name":"XML","type":"1","type1":"3"},{"name":"XML Schema","type":"1","type1":"3"},{"name":"SGML","type":"1","type1":"3"},{"name":"XSL","type":"1","type1":"3"},{"name":"ADO","type":"1","type1":"3"},{"name":"ASP","type":"1","type1":"3"},{"name":"VBScript","type":"2","type1":"4"}]
+    const Drag = document.getElementById('Drag');
+    const cells = document.getElementsByClassName('cell');
+    let startDrag = false, dragData = {}, dargIndex = -1;
+
+    function addLi(i) {
+      const li = document.createElement('li');
+      li.setAttribute('data-i', i);
+      li.innerText = Languages[i].name;
+      Lan.appendChild(li);
+    }
+
+    function creatLanguagesEle() {
+      for (let i = 0; i < Languages.length; i++) {
+        addLi(i);
+        for (let j = 0, len = cells.length; j < len; j++) {
+          const cell = cells[j];
+          addLanguage(cell, Languages[i], i, true);
+        }
+      }
+    }
+
+    function addLanguage(cellBox, data, i, isCreat) {
+      const t = cellBox.getAttribute('data-t').split(',');
+      // 已设置的需要先删除
+      if (!isCreat) {
+        if (Languages[i][t[0]]) {
+          return
+        }
+      } else if (Languages[i][t[0]] != t[1]) {
+        return
+      }
+      const cell = document.createElement('div');
+      cell.setAttribute('data-lan', i);
+      cell.innerText = data.name;
+      !isCreat && (Languages[i][t[0]] = t[1]);
+      cellBox.appendChild(cell);
+    }
+
+    function checkCollide(x, y, isUp) {
+      for (let i = 0, len = cells.length; i < len; i++) {
+        const cell = cells[i];
+        const rect = cell.getBoundingClientRect();
+        const [xx, yy] = [x - rect.x, y - rect.y];
+        if (xx > 0 && yy > 0 && xx < rect.width && yy < rect.height) {
+          if (!isUp) {
+            cell.classList.add('active');
+          } else {
+            addLanguage(cell, dragData, dargIndex);
+            cell.classList.remove('active');
+          }
+        } else {
+          cell.classList.remove('active');
+        }
+      }
+    }
+
+    function setDrag(isShow, obj, x, y) {
+      if (!isShow) {
+        Drag.setAttribute('style','display: none');
+        return
+      }
+      obj &&( Drag.innerText = obj.name);
+      Drag.setAttribute('style',`
+        left: ${x}px;
+        top: ${y}px;
+        display: block;
+      `);
+    }
+
+    function down(e) {
+      const dom = e.target;
+      const i = dom.getAttribute('data-i');
+      if (i === null) {
+        return
+      }
+      const [x, y] = [e.clientX, e.clientY];
+      startDrag = true;
+      dragData = Languages[i];
+      dargIndex = i;
+      setDrag(true, dragData, x, y);
+    }
+
+    function move(e) {
+      if (!startDrag) {
+        return
+      }
+      const [x, y] = [e.clientX, e.clientY];
+      setDrag(true,null, x, y);
+      checkCollide(x, y);
+    }
+
+    function up(e) {
+      if (!startDrag) return;
+      startDrag = false;
+      const [x, y] = [e.clientX, e.clientY];
+      setDrag(false);
+      checkCollide(x, y, true);
+    }
+    function selectstart(e) {
+      if (e.target.id !== 'Res') {
+        e.preventDefault();
+      }
+    }
+    // 双击删除
+    function dblclick(e) {
+      const i = e.target.getAttribute('data-lan');
+      if (i === null) {
+        return
+      }
+      const t = e.target.parentNode.getAttribute('data-t');
+      if (t === null) {
+        return
+      }
+      const arr = t.split(',');
+      Languages[i][arr[0]] = null;
+      e.target.parentNode.removeChild(e.target);
+    }
+
+    function creatEvent() {
+      document.addEventListener('selectstart', selectstart);
+      document.addEventListener('mousedown', down);
+      document.addEventListener('mousemove', move);
+      document.addEventListener('mouseup', up);
+      document.addEventListener('dblclick', dblclick);
+    }
+
+    function getResult() {
+      const types = {
+        1: '数据描述语言',
+        2: '编程语言',
+        3: '声明式语言',
+        4: '命令式语言',
+      }
+      const res = [
+        {
+          name: '按用途分类',
+          child: [
+            {
+              name: '数据描述语言',
+              child: Languages.filter(a => a.type == 1),
+            }, {
+              name: '编程语言',
+              child: Languages.filter(a => a.type == 2),
+            }
+          ],
+        }, {
+          name: '按表达方式用分类',
+          child: [
+            {
+              name: '声明式语言',
+              child: Languages.filter(a => a.type == 1),
+            }, {
+              name: '命令式语言',
+              child: Languages.filter(a => a.type == 2),
+            }
+          ],
+        }
+      ];
+      Res.value = JSON.stringify(res);
+      // Res.value = JSON.stringify(Languages);
+      Res.select();
+      document.execCommand('copy');//拷贝
+      Msg.innerText = '已将结果复制到剪切板';
+      setTimeout(() => {
+        Msg.innerText = '';
+      }, 5000)
+      var selObj = window.getSelection();//获取选择内容
+      selObj.removeAllRanges();//取消选择
+    }
+
+    function getLanguages() {
+      lanInput.value = JSON.stringify(Languages);
+      lanInput.select();
+      document.execCommand('copy');//拷贝
+      GetLan.innerText = '已将新的起始数据复制到剪切板';
+      setTimeout(() => {
+        GetLan.innerText = '';
+      }, 5000)
+      var selObj = window.getSelection();//获取选择内容
+      selObj.removeAllRanges();//取消选择
+      lanInput.value = '';
+    }
+
+    function add() {
+      if (Languages.filter(a => a.name === lanInput.value)[0]) {
+        return
+      }
+      Languages.push({name: lanInput.value});
+      addLi(Languages.length - 1);
+    }
+
+    creatLanguagesEle();
+    creatEvent();
+  </script>
+</body>
+</html>
