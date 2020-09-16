@@ -3,9 +3,73 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
+  <title>特殊行为对象</title>
 </head>
 <body>
-  
+  <script>
+    // 无法用属性加原型描述的对象
+    console.dir(Object);
+    const arr = [
+      navigator,
+      Event,
+      screen,
+      Object.prototype,
+      BigInt,
+      BigInt64Array,
+      BigUint64Array,
+      Infinity,
+      NaN,
+      undefined,
+      eval,
+      isFinite,
+      isNaN,
+      parseFloat,
+      parseInt,
+      decodeURI,
+      decodeURIComponent,
+      encodeURI,
+      encodeURIComponent,
+      Array,
+      Date,
+      RegExp,
+      Promise,
+      Proxy,
+      Map,
+      WeakMap,
+      Set,
+      WeakSet,
+      Function,
+      Boolean,
+      String,
+      Number,
+      Symbol,
+      Error,
+      EvalError,
+      RangeError,
+      ReferenceError,
+      SyntaxError,
+      TypeError,
+      URIError,
+      ArrayBuffer,
+      SharedArrayBuffer,
+      DataView,
+      Float32Array,
+      Float64Array,
+      Int8Array,
+      Int16Array,
+      Int32Array,
+      Uint8Array,
+      Uint16Array,
+      Uint32Array,
+      Uint8ClampedArray,
+      Atomics,
+      JSON,
+      Math,
+      Reflect,
+      escape,
+      unescape,
+    ]
+    console.dir(arr);
+  </script>
 </body>
 </html>
