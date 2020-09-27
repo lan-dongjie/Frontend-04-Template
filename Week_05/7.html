@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Realm</title>
+  <style>
+    html,
+    body {
+      height: 100%;
+    }
+
+    #container {
+      height: 100%;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="container"></div>
+  <script src="https://gw.alipayobjects.com/os/antv/pkg/_antv.g6-3.5.10/dist/g6.min.js"></script>
+  <script>
+    const realmData = {
+      id: 'realm',
+      children: [
+        {
+          "id": "data-structure",
+          "children": [
+            {
+              "id": "Object",
+            },
+            {
+              "id": "Array",
+              "children": [
+                {
+                  "id": "BigInt64Array",
+                },
+                {
+                  "id": "BigUint64Array",
+                },
+                {
+                  "id": "ArrayBuffer",
+                },
+                {
+                  "id": "SharedArrayBuffer",
+                },
+                {
+                  "id": "Float32Array",
+                },
+                {
+                  "id": "Float64Array",
+                },
+                {
+                  "id": "Int8Array",
+                },
+                {
+                  "id": "Int16Array",
+                },
+                {
+                  "id": "Int32Array",
+                },
+                {
+                  "id": "Uint8Array",
+                },
+                {
+                  "id": "Uint16Array",
+                },
+                {
+                  "id": "Uint32Array",
+                },
+                {
+                  "id": "Uint8ClampedArray",
+                },
+              ]
+            },
+            {
+              "id": "Number",
+              "children": [
+                {
+                  "id": "BigInt",
+                },
+                {
+                  "id": "Infinity",
+                },
+                {
+                  "id": "NaN",
+                },
+              ]
+            },
+            {
+              "id": "String",
+            },
+            {
+              "id": "Boolean",
+            },
+            {
+              "id": "Symbol",
+            },
+            {
+              "id": "undefined",
+            },
+          ]
+        },
+        {
+          "id": "SomeConstructor",
+          "children": [
+            {
+              "id": "Date",
+            },
+            {
+              "id": "RegExp",
+            },
+            {
+              "id": "Promise",
+            },
+            {
+              "id": "Map",
+            },
+            {
+              "id": "WeakMap",
+            },
+            {
+              "id": "Set",
+            },
+            {
+              "id": "WeakSet",
+            }
+          ]
+        },
+        {
+          "id": "Error",
+          "children": [
+            {
+              "id": "EvalError",
+            },
+            {
+              "id": "RangeError",
+            },
+            {
+              "id": "ReferenceError",
+            },
+            {
+              "id": "SyntaxError",
+            },
+            {
+              "id": "TypeError",
+            },
+            {
+              "id": "URIError",
+            },
+          ]
+        },
+        {
+          "id": "Function",
+          "children": [
+            {
+              "id": "numberFunction",
+              "children": [
+                {
+                  "id": "isNaN",
+                },
+                {
+                  "id": "parseFloat",
+                },
+                {
+                  "id": "parseInt",
+                },
+                {
+                  "id": "isFinite",
+                },
+              ]
+            },
+            {
+              "id": "stringFunction",
+              "children": [
+                {
+                  "id": "decodeURI",
+                },
+                {
+                  "id": "decodeURIComponent",
+                },
+                {
+                  "id": "encodeURI",
+                },
+                {
+                  "id": "encodeURIComponent",
+                },
+              ]
+            }
+          ]
+        },
+        {
+          "id": "Other",
+          "children": [
+            {
+              "id": "eval",
+            },
+            {
+              "id": "Proxy",
+            },
+            {
+              "id": "DataView",
+            },
+            {
+              "id": "Atomics",
+            },
+            {
+              "id": "Math",
+            },
+            {
+              "id": "Reflect",
+            },
+            {
+              "id": "JSON",
+            }
+          ]
+        },
+
+      ]
+    }
+    function G6Render(data) {
+      const { width, height } = document.getElementById('container').getBoundingClientRect();
+      const graph = new G6.TreeGraph({
+        container: 'container',
+        width,
+        height,
+        modes: {
+          default: [
+            {
+              type: 'collapse-expand',
+              onChange: function onChange(item, collapsed) {
+                console.log('item, collapsed', item, collapsed);
+                const data = item.get('model').data;
+                data.collapsed = collapsed;
+                return true;
+              },
+            },
+            'drag-canvas',
+            'zoom-canvas',
+          ],
+        },
+        defaultNode: {
+          size: 50,
+          style: {
+            fill: '#C6E5FF',
+            stroke: '#5B8FF9',
+          },
+        },
+        defaultEdge: {
+          style: {
+            stroke: '#A3B1BF',
+          },
+        },
+        layout: {
+          type: 'dendrogram',
+          direction: 'LR',
+          nodeSep: 100,
+          rankSep: 100,
+          radial: true,
+        },
+      });
+
+      graph.node(function (node) {
+        return {
+          label: node.id,
+        };
+      });
+
+      graph.data(data);
+      graph.render();
+      graph.fitView();
+    }
+
+    G6Render(realmData)
+  </script>
+</body>
+
+</html>
