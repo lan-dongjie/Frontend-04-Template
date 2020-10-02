@@ -18,7 +18,7 @@ function kmp(source, pattern) {
   }
   console.log(table);
   {
-    let i = 0, j = 0, res = 0;
+    let i = 0, j = 0;
     while(i < source.length) {
       if (pattern[j] === source[i]) {
         ++j,++i;
