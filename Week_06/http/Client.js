@@ -176,12 +176,9 @@ class Request {
         connection.write(this.toString())
       });
       connection.on('data', data => {
-        console.log('llll', data.toString());
         parser.receive(data.toString())
         resolve(data.toString())
-        connection.end();
         if (parser.isFinished) {
-          console.log('data--------------\n', data.toString());
           resolve(parser.response)
           connection.end();
         }
@@ -191,22 +188,6 @@ class Request {
         console.log('err---------', err);
         reject(err)
         connection.end();
-      })
-
-      connection.on('lookup',(a) => {
-        console.log('lookup', a);
-      })
-      connection.on('end',(a) => {
-        console.log('end', a);
-      })
-      connection.on('timeout',(a) => {
-        console.log('timeout', a);
-      })
-      connection.on('drain',(a) => {
-        console.log('drain', a);
-      })
-      connection.on('close',(a) => {
-        console.log('close', a);
       })
     })
   }
