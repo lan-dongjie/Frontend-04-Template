@@ -1,4 +1,5 @@
 const css = require('css')
+const {layout} = require('./Layout')
 
 const EOF = Symbol('EOF')
 const tagRex = /^[(a-zA-Z)|(1-6)]$/
@@ -207,9 +208,9 @@ function computeCSS(element) {
       }
     }
   }
-  console.log('s------------');
-  console.dir(JSON.stringify(element));
-  console.log('e------------\n');
+  // console.log('s------------');
+  // console.dir(JSON.stringify(element));
+  // console.log('e------------\n');
 }
 
 function emit(token) {
@@ -245,6 +246,7 @@ function emit(token) {
       if (top.type === 'style') {
         addCSSRules(top.children[0].content)
       }
+      // layout(top)
       stack.pop();
     }
     currentTextNode = null
@@ -480,6 +482,6 @@ module.exports.parseHTML = function parseHTML(html) {
     state = state(c)
   }
   state = state(EOF)
-  return stack[0]
   // console.log(JSON.stringify(stack[0]));
+  return stack[0]
 }
