@@ -1,10 +1,8 @@
 const Request = require('./js/Request')
-var images = require("images");
+const images = require("images");
 const {parseHTML} = require('./js/parser')
+const {render} = require('./js/render')
 
-function render (view, dom) {
-  console.log('(view, dom',view, dom);
-}
 
 
 void async function () {
@@ -22,11 +20,8 @@ void async function () {
   })
   let response = await request.send();
   const dom = parseHTML(response.body);
-  console.log('dom', JSON.stringify(dom));
-  if (!dom) {
-    return
-  }
+  // console.dir(dom.children[0].children[3].children[1].children[3]);
   let viewport = images(1000, 800)
-  render(viewport, dom.children[0].children[3].children[1].children[3])
+  render(viewport, dom.children[0].children[3].children[1])
   viewport.save('viewport.jpg')
 }();

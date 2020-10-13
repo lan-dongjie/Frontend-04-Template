@@ -13,6 +13,7 @@ function getStyle(element) {
       element.style[prop] = parseInt(value)
     }
   }
+  // console.log('element.style\n', element.style, '\n');
   return element.style
 }
 
@@ -25,8 +26,7 @@ function layout(element) {
   if (elementStyle.display !== 'flex') {
     return
   }
-  console.log('element',element.children);
-  let items = element.children.filter(e => e.type === 'element')
+  let items = element.children.filter(e => e.type === 'div')
 
   items.sort(function (a, b) {
     return (a.order || 0) - (b.order || 0)
@@ -122,7 +122,8 @@ function layout(element) {
     crossSign = 1;
     crossBase = 0;
   }
-
+  console.log('00000\n',mainSize, mainStart, mainEnd, mainSign, mainBase,
+  crossSize, crossStart, crossEnd, crossSign, crossBase);
   let isAutoMainSize = false;
   // 没设置主轴，由元素撑开
   if (!style[mainSize]) {
@@ -136,11 +137,11 @@ function layout(element) {
     }
     isAutoMainSize = true
   }
-
   // 分行
   let flexLine = [], flexLines = [flexLine]
   // 主轴剩余空间，交叉轴剩余空间
   let mainSpace = elementStyle[mainSize], crossSpace = 0;
+  console.log('-----', mainSpace, mainSize, items.length);
 
   for (let i = 0; i < items.length; i++) {
     const item = items[i];
@@ -149,21 +150,25 @@ function layout(element) {
     if (itemStyle[mainSize] === null) {
       itemStyle[mainSize] = 0;
     }
-
+    // 取行高（取最高的那个）
+    if (itemStyle[crossSize] !== null && itemStyle[crossSize] !== void(0)) {
+      crossSpace = Math.max(crossSpace, itemStyle[crossSize])
+    }
     if (itemStyle.flex) {
       flexLine.push(item)
     } else if (style.flexWrap === 'nowrap' && isAutoMainSize) {
       mainSpace -= itemStyle[mainSize];
-      // 取行高（取最高的那个）
-      if (itemStyle[crossSize] !== null && itemStyle[crossSize] !== void(0)) {
-        crossSpace = Math.max(crossSpace, itemStyle[crossSize])
-      }
+      
       flexLine.push(item)
     } else {
       // 子元素比主轴大的取主轴值
       if (itemStyle[mainSize] > style[mainSize]) {
         itemStyle[mainSize] = style[mainSize]
       }
+      // 取行高（取最高的那个）
+      // if (itemStyle[crossSize] !== null && itemStyle[crossSize] !== void(0)) {
+      //   crossSpace = Math.max(crossSpace, itemStyle[crossSize])
+      // }
       // 剩下空间放不下元素时的处理（换行）
       if (mainSpace < itemStyle[mainSize]) {
         // 记录当前行的剩余空间（主轴和交叉轴的剩余空间）
@@ -181,12 +186,14 @@ function layout(element) {
         crossSpace = Math.max(crossSpace, itemStyle[crossSize])
       }
       mainSpace -= itemStyle[mainSize]
+      
     }
   }
   flexLine.mainSpace = mainSpace;
+  flexLine.crossSpace = crossSpace
   // 分行 --------end
 
-  // 计算宽(高)度
+  // 计算主轴长度
   if (mainSpace < 0) {
     // 主轴剩余空间小于0，做等比压缩
     let scale = style[mainSize] / (style[mainSize] - mainSpace);
@@ -225,12 +232,14 @@ function layout(element) {
           const item = items[i];
           let itemStyle = getStyle(item)
           if (itemStyle.flex) {
-            itemStyle[mainSize] = (mainSpace / flexTotal) * itemStyle
+            itemStyle[mainSize] = (mainSpace / flexTotal) * itemStyle.flex
           }
+          // console.log('currentMain',itemStyle[mainStart], mainSign, itemStyle[mainSize]);
           itemStyle[mainStart] = currentMain
-          itemStyle[mainEnd] = itemStyle[mainStart] * mainSign * itemStyle[mainSize]
+          itemStyle[mainEnd] = itemStyle[mainStart] + mainSign * itemStyle[mainSize]
           currentMain = itemStyle[mainEnd]
         }
+        
       } else {
         let currentMain = mainBase, step = 0
         if (style.justifyContent === 'flex-start') {
@@ -265,17 +274,17 @@ function layout(element) {
     })
   }
 
-
   if (!style[crossSize]) {
     crossSpace = 0;
     elementStyle[crossSize] = 0
     for (let i = 0; i < flexLines.length; i++) {
       elementStyle[crossSize] += flexLines[i].crossSpace;
+      
     }
   } else {
     crossSpace = style[crossSize]
     for (let i = 0; i < flexLines.length; i++) {
-      crossSpace -= flexLines[i].crossSpace;
+      crossSpace -= flexLines[i].crossSpace || 0;
     }
   }
 
@@ -285,7 +294,7 @@ function layout(element) {
     crossBase = 0
   }
 
-  let lineSize = style[crossSize] / flexLines.length
+  // let lineSize = style[crossSize] / flexLines.length
   let step = 0;
   if (style.alignContent === 'flex-start') {
     crossBase += 0
@@ -308,19 +317,19 @@ function layout(element) {
     crossBase += 0
     step = 0
   }
-
+  // console.log('crossSpace', flexLines.length);
   flexLines.forEach(items => {
     let lineCrossSize = style.alignContent === 'stretch' ? items.crossSpace + crossSpace / flexLines.length : items.crossSpace
-
     for (let i = 0; i < items.length; i++) {
       const item = items[i];
       let itemStyle = getStyle(item)
       let align = itemStyle.alignSelf || style.alignItems
-
-      if (item === null) {
-        itemStyle[crossSize] = align === 'stretch' ? lineCrossSize : 0
+      
+      if (item !== null) {
+        itemStyle[crossSize] = align === 'stretch' ? lineCrossSize : items.crossSpace
+        
       }
-
+      
       if (align === 'flex-start') {
         itemStyle[crossStart] = crossBase
         itemStyle[crossEnd] = itemStyle[crossStart] + crossSign * itemStyle[crossSize]
@@ -334,6 +343,7 @@ function layout(element) {
         itemStyle[crossEnd] = itemStyle[crossStart] + crossSign * itemStyle[crossSize]
       }
       if (align === 'stretch') {
+        // console.log('ooooo', crossBase, crossStart, crossEnd, crossSize, itemStyle[crossSize]);
         itemStyle[crossStart] = crossBase
         itemStyle[crossEnd] = crossBase + crossSign * ((itemStyle[crossSize] !== null && itemStyle[crossSize] !== (void 0)) ? itemStyle[crossSize] : 0)
         itemStyle[crossSize] = crossSign * (itemStyle[crossEnd] - itemStyle[crossStart])
@@ -341,6 +351,8 @@ function layout(element) {
     }
     crossBase += crossSign * (lineCrossSize + step)
   })
+  
+  // console.log('\nssss------------\n',element.style,'eeee-------\n');
 }
 
 module.exports = {

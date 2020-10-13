@@ -246,7 +246,8 @@ function emit(token) {
       if (top.type === 'style') {
         addCSSRules(top.children[0].content)
       }
-      // layout(top)
+      // console.log('\ntopsssssssssssssss', top.type, 'eeeeeeeeeeeeee\n');
+      layout(top)
       stack.pop();
     }
     currentTextNode = null
