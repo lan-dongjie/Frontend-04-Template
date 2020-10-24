@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>match</title>
+  </head>
+  <body>
+    <div id="box">
+      <div class="a b ggg" id="A"></div>
+      <div class="d" id="D"></div>
+      <div class="d c" id="C"></div>
+      <p><i id="I"></i></p>
+      <span id="Span"></span>
+    </div>
+    <script>
+      function isSameId(selector, id) {
+        let same_id = true;
+        selector.replace(/#((?!\.)\S)*/i, ($) => {
+          if (!id || $ !== `#${id}`) {
+            same_id = false;
+          }
+          return '';
+        });
+        // console.log('id', selector, id, same_id);
+        return same_id;
+      }
+      function isSameClass(selector, className) {
+        let same_class = true;
+        const classList = className ? className.split(' ') : [];
+        // console.log('classList', classList, className);
+        selector.replace(/\.\S((?!\.)\S)*/g, ($) => {
+          if (!className || !classList.includes($.replace(/^\./i, ''))) {
+            same_class = false;
+          }
+          return '';
+        });
+        // console.log('class', selector, className, same_class);
+        return same_class;
+      }
+      function isSameNode(selector, nodeName) {
+        let same_node = true;
+        const name = nodeName.toLowerCase();
+        selector.replace(/^((?!(\.|#|>))\S)((?!(\.|#|>))\S)*/i, ($) => {
+          if (name !== $) {
+            same_node = false;
+          }
+          return '';
+        });
+        // console.log('name', selector, nodeName, same_node);
+        return same_node;
+      }
+      function isSelectorNode(selector, element) {
+        // console.log('--------', selector, element);
+        const { nodeName, id, className } = element;
+        if (!isSameId(selector, id)) {
+          return false;
+        }
+        if (!isSameClass(selector, className)) {
+          return false;
+        }
+        if (!isSameNode(selector, nodeName)) {
+          return false;
+        }
+        // console.log('isSelectorNode', nodeName, id, className);
+        return true;
+      }
+      function match(selector, element) {
+        const partSelector = selector.split(' ');
+        let preSelector = '';
+        let lastSelector = partSelector.pop();
+        let isFirst = true;
+        let node = element;
+        console.log(selector, element, partSelector);
+        do {
+          if (isSelectorNode(lastSelector, node)) {
+            node = node.parentNode;
+            preSelector = lastSelector;
+            lastSelector = partSelector.pop();
+            if (lastSelector === '>') {
+              preSelector = lastSelector;
+              lastSelector = partSelector.pop();
+            }
+            if (node.nodeName === 'HTML' && lastSelector) {
+              return false;
+            }
+            isFirst = false;
+          } else if (isFirst) {
+            return false;
+          } else if (preSelector === '>') {
+            return false;
+          } else {
+            let parent_same = false;
+            while (node && node.nodeName !== 'BODY' && !parent_same) {
+              node = node.parentNode;
+              if (isSelectorNode(lastSelector, node)) {
+                parent_same = true;
+              }
+            }
+            if (!parent_same) {
+              return false;
+            }
+          }
+        } while (lastSelector);
+
+        return true;
+      }
+      console.log('res:', match('body div#box', box));
+      console.log('res:', match('#box .a.b', A));
+      console.log('res:', match('div#box .a.b', box));
+      console.log('res:', match('#box p i', I));
+      console.log('res:', match('body > div', box));
+      console.log('res:', match('body > div', A));
+
+      console.log('res:', match('body span', Span));
+      console.log('res:', match('.d', D));
+      console.log('res:', match('div .d.c', C));
+    </script>
+  </body>
+</html>
