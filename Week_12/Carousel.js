@@ -3,40 +3,46 @@ import { Component } from './frameWork';
 export default class Carousel extends Component {
   constructor(type, attributes, children) {
     super(type, attributes, children);
-    // this.root = document.createElement('div')
     this.carouselItems = [];
     this.currentIndex = -1;
-    this.initCarouselItem();
+    this.initInterval();
   }
   setAttribute(name, value) {
     // this.attributes[name] = value;
   }
-  initCarouselItem() {
+  initCarouselItem(root) {
     this.attributes.src.forEach((item) => {
       const dom = document.createElement('div');
       dom.style.backgroundImage = `url(${item})`;
-      this.carouselItems.push(dom);
-      this.root.appendChild(dom);
+      root.appendChild(dom);
     });
-    if (!this.carouselItems.length) {
-      return;
-    }
-    this.initInterval();
   }
   initInterval() {
     this.currentIndex = 0;
-    console.log(this.carouselItems);
+    this.carouselItems = this.root.children;
+    const len = this.carouselItems.length;
     setInterval(() => {
-      let nextIndex = this.currentIndex % this.carouselItems.length;
-      this.carouselItems.forEach((item) => {
-        item.style.transform = `translateX(-${this.currentIndex * 100}%)`;
-      });
-      this.currentIndex = nextIndex + 1;
+      let currentIndex = this.currentIndex % len;
+      let current = this.carouselItems[currentIndex];
+
+      // 下一个先准备好
+      let nextIndex = (currentIndex + 1) % len;
+      let next = this.carouselItems[nextIndex];
+      next.style.transition = 'none';
+      next.style.transform = `translateX(${100 - nextIndex * 100}%)`;
+
+      // 准备好之后一起移动
+      setTimeout(() => {
+        current.style.transform = `translateX(${-100 - currentIndex * 100}%)`;
+        next.style.transition = '';
+        next.style.transform = `translateX(-${nextIndex * 100}%)`;
+      }, 16);
+      this.currentIndex = currentIndex + 1;
     }, 3000);
   }
   render() {
-    console.log('this.type', this.type);
     const dom = document.createElement(this.type);
+    this.initCarouselItem(dom);
     dom.classList.add('carousel');
     return dom;
   }

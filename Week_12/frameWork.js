@@ -1,9 +1,9 @@
 export class Component {
   constructor(type, attributes, children) {
     this.type = type;
-    this.root = this.render();
     this.attributes = attributes;
     this.children = children;
+    this.root = this.render();
   }
   setAttribute(name, value) {
     this.root.setAttribute(name, value);
