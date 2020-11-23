@@ -8,7 +8,6 @@ function resolve(dir) {
 }
 const entrys = [
   'index',
-  'demo',
 ]
 const getEntry = (entrys) => {
   const entry = {}
