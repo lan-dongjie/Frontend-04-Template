@@ -22,14 +22,14 @@ export class Listener {
       let { button } = event
       button += 1
       let context = Object.create(null)
-      console.log('00', `mouse${1 << button}`, button);
+      // console.log('00', `mouse${1 << button}`, button);
       contexts.set(`mouse${1 << button}`, context)
       recognizer.start(event, context);
       let mousemove = e => {
         const { buttons } = e
         let button = 1
         while (button <= buttons) {
-          console.log(buttons, button);
+          // console.log(buttons, button);
           if (button & buttons) {
             let key
             // 中键右键值和down的相反
@@ -40,7 +40,7 @@ export class Listener {
             } else {
               key = button
             }
-            console.log('end', buttons, button, key, `mouse${1 << key}`, contexts.get(`mouse${1 << key}`));
+            // console.log('end', buttons, button, key, `mouse${1 << key}`, contexts.get(`mouse${1 << key}`));
             // if (contexts.get(`mouse${1 << key}`)) {
             recognizer.move(e, contexts.get(`mouse${1 << key}`))
             // }
@@ -125,14 +125,14 @@ export class Recognizer {
     const { clientX, clientY } = point
     let { startX, startY, isVertical } = context
     let dx = clientX - startX, dy = clientY - startY;
-    console.log(context.isPan, dx ** 2 + dy ** 2, '----');
+    // console.log(context.isPan, dx ** 2 + dy ** 2, '----');
     if (!context.isPan && dx ** 2 + dy ** 2 > 100) {
       context.isPan = true
       context.isTap = false
       context.isPress = false
       isVertical = Math.abs(dx) < Math.abs(dy)
       context.isVertical = isVertical
-        ; console.log('isVertical', isVertical, context.isVertical);
+      // ; console.log('isVertical', isVertical, context.isVertical);
       this.disptcher.disptch('panstart', {
         startX,
         startY,
