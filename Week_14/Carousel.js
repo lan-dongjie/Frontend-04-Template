@@ -83,45 +83,6 @@ export default class Carousel extends Component {
       child.style.transform = `translateX(${- pos * this.width + offset * this.width}px)`;
     }
   }
-  initEventff() {
-    this.root.addEventListener('mousedown', event => {
-      const { width } = this.root.getBoundingClientRect()
-      const len = this.carouselItems.length;
-      let startX = event.clientX;
-      this.isDrag = true;
-      let position = this.currentIndex
-      const move = event => {
-        const dragX = event.clientX - startX;
-        let current = position - ((dragX - dragX % width) / width)
-        for (let offset of [-1, 0, 1]) {
-          let pos = current + offset
-          pos = (pos + len) % len
-          const child = this.carouselItems[pos]
-          child.style.transition = 'none';
-          child.style.transform = `translateX(${- pos * width + offset * width + dragX % width}px)`;
-        }
-      }
-      const up = event => {
-        this.isDrag = false
-        const dragX = event.clientX - startX;
-        position = position - Math.round(dragX / width);
-        for (let offset of [0, - Math.sign(Math.round(dragX / width) - dragX + width / 2 * Math.sign(dragX))]) {
-          let pos = position + offset
-          pos = (pos + len) % len
-          if (offset === 0) {
-            this.currentIndex = pos
-          }
-          const child = this.carouselItems[pos]
-          child.style.transition = '';
-          child.style.transform = `translateX(${- pos * width + offset * width}px)`;
-        }
-        document.removeEventListener('mousemove', move)
-        document.removeEventListener('mouseup', up)
-      }
-      document.addEventListener('mousemove', move)
-      document.addEventListener('mouseup', up)
-    })
-  }
   move() {
     const len = this.carouselItems.length;
     let currentIndex = this.currentIndex % len;

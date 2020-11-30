@@ -16,7 +16,7 @@ export class Timeline {
 		if (this.state !== 'Inited') {
 			return
 		}
-		this.state = 'startd'
+		this.state = 'started'
 		let startTime = Date.now();
 		this[PAUSE_TIME] = 0
 		this[TICK] = () => {

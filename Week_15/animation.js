@@ -28,7 +28,7 @@ export class Timeline {
 					// console.log('111111', t);
 				} else {
 					t = now - this[START_TIME].get(animation) - this[PAUSE_TIME] - animation.delay
-					// console.log('2222', t);
+					// console.log('2222', t, now, this[START_TIME].get(animation), this[PAUSE_TIME], animation.delay);
 
 				}
 				if (animation.duration < t) {
@@ -62,6 +62,7 @@ export class Timeline {
 		cancelAnimationFrame(this[TICK_HANDLER])
 	}
 	resume() {
+
 		if (this.state !== 'paused') {
 			return
 		}
