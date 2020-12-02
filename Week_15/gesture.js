@@ -51,6 +51,7 @@ export class Listener {
       let mouseup = e => {
         let { button, buttons } = e
         button += 1
+        console.log('----');
         recognizer.end(e, contexts.get(`mouse${1 << button}`))
         contexts.delete(`mouse${1 << button}`)
         // 如果鼠标按下的键都弹起了才取消事件
@@ -143,6 +144,7 @@ export class Recognizer {
       })
     }
     if (context.isPan) {
+      clearTimeout(context.handler)
       this.disptcher.disptch('pan', {
         startX,
         startY,
@@ -194,6 +196,7 @@ export class Recognizer {
       context.isFlick = false
     }
     disptchData.isFlick = context.isFlick
+    console.log('context.isPan', context, context.isPan);
     if (context.isPan) {
       this.disptcher.disptch('panend', disptchData)
     }

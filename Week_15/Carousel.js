@@ -1,9 +1,8 @@
 import { Component, STATE, ATTRIBUTE } from './frameWork';
 import { enabbleGesture } from './gesture'
 import { Animation, Timeline } from './animation'
-import { ease, easeIn, easeOut, easeInOut } from './ease'
+import { ease, easeIn, easeOut, easeInOut, linear } from './ease'
 
-const line = v => v
 
 export { STATE, ATTRIBUTE } from './frameWork';
 
@@ -15,8 +14,8 @@ export default class Carousel extends Component {
     this.carouselItems = []
     this.handler = null
     this.timeline = new Timeline()
-    this.duration = 1500
-    this.timingFunction = line
+    this.duration = 500
+    this.timingFunction = linear
     this.template = v => `translateX(${v}px)`
     this.t = 0
   }
@@ -28,15 +27,16 @@ export default class Carousel extends Component {
     });
   }
   initEvent() {
-    this.gesture = enabbleGesture(this.root)
     let ax = 0
     this.root.addEventListener('start', message => {
-
       clearInterval(this.handler)
       this.handler = null
       this.timeline.pause()
-      let progress = (Date.now() - this.t) / this.duration
-      ax = this.timingFunction(progress) * this.width - this.width
+      const t = Date.now() - this.t
+      let progress = (t > this.duration || this.t === 0) ? 0 : t / this.duration
+      progress = progress - Math.floor(progress)
+      ax = -this.timingFunction(progress) * this.width
+      console.log('progress', progress, ax);
     })
     this.root.addEventListener('pan', message => {
       this.dragMove(message.clientX - message.startX - ax)
@@ -52,6 +52,8 @@ export default class Carousel extends Component {
       // this.move()
     })
     this.root.addEventListener('end', message => {
+      console.log('eeeeeeeeeeeeeeeee');
+      this.timeline.resume()
 
       this.initInterval();
     })
@@ -61,7 +63,7 @@ export default class Carousel extends Component {
     let position = this[STATE].position
     let current = position - ((dragX - dragX % this.width) / this.width)
     for (let offset of [-1, 0, 1]) {
-      let pos = current + offset
+      let pos = (current + offset) % len
       pos = (pos + len) % len
       const child = this.carouselItems[pos]
       child.style.transform = `translateX(${- pos * this.width + offset * this.width + dragX % this.width}px)`;
@@ -69,22 +71,24 @@ export default class Carousel extends Component {
   }
   dragEnd(dragX) {
     const len = this.carouselItems.length;
-    const magnification = dragX % this.width
-    const left = magnification * 2 / this.width
-    let position = this[STATE].position
+    const magnification = dragX % this.width;
+    const direction = Math.sign(magnification)
+    const progress = Math.abs(magnification / this.width);
+    const min = Math.min(progress, 1 - progress) * this.width
+    let position = this[STATE].position;
     position = position - Math.round(dragX / this.width);
-    for (let offset of [0, - Math.sign(Math.round(left))]) {
-      let pos = position + offset;
+    let next = Math.sign(progress - 0.5) * direction
+    for (let offset of [0, next]) {
+      let pos = (position + offset) % len;
       pos = (pos + len) % len;
-      if (offset === 0) {
-        position = pos;
-      }
       const child = this.carouselItems[pos];
-      const startX = -pos * this.width + magnification
-      const endX = (offset - pos) * this.width
-      this.timeline.add(new Animation(child.style, 'transform', startX, endX, this.duration * left / 2, 0, this.timingFunction, this.template))
+      // 结束位置固定
+      const endX = (offset - pos) * this.width;
+      // 不管怎么移动，松手后只移动小于宽度一半的那段距离，根据移动方向在结束位置加上那段偏移可得开始位置
+      const startX = endX + min * -next;
+      this.timeline.add(new Animation(child.style, 'transform', startX, endX, this.duration * (1 - progress), 0, this.timingFunction, this.template))
     }
-    this[STATE].position = position + 1
+    this[STATE].position = (position + len) % len;
   }
   move() {
     const len = this.carouselItems.length;
@@ -114,9 +118,12 @@ export default class Carousel extends Component {
     if (this.handler) {
       return
     }
+    this.t = 0;
     this.handler = setInterval(() => {
+      console.log('iiiiiiiiii');
       this.move()
     }, 3000);
+    console.log('================', this.handler);
   }
   render() {
     const dom = document.createElement('div');
@@ -124,14 +131,13 @@ export default class Carousel extends Component {
     dom.classList.add('carousel');
     this.initCarouselItem();
     enabbleGesture(this.root)
-    this.carouselItems = this.root.children
+    this.carouselItems = this.root.children;
     setTimeout(() => {
-      // 获取宽度
       this.width = this.root.getBoundingClientRect().width
       this.timeline.start();
       this.initInterval();
       this.initEvent();
-    }, 25)
+    }, 16)
   }
   triggerEvent(type, args) {
     this[ATTRIBUTE][`on${type.replace(/^\s\S/, s => s.toUpperCase())}`](new CustomEvent(type, { detail: args }))
