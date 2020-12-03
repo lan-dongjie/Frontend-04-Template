@@ -7,7 +7,10 @@ for (let i = 0; i < 8; i++) {
   imgs.push(`./img/${i}.jpg`);
 }
 
-let App = <Carousel src={imgs} onChange={e => console.log(e.detail.position)} />;
+let App = <Carousel
+  src={imgs}
+  onClick={e => console.log('click', e.detail)}
+  onChange={e => console.log('change', e.detail.position)} />;
 
 App.mountTo(document.body);
 

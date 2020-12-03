@@ -38,6 +38,12 @@ export default class Carousel extends Component {
       ax = -this.timingFunction(progress) * this.width
       console.log('progress', progress, ax);
     })
+    this.root.addEventListener('tap', (message) => {
+      this.triggerEvent('click', {
+        data: this[ATTRIBUTE].src[this[STATE].position],
+        position: this[STATE].position
+      })
+    })
     this.root.addEventListener('pan', message => {
       this.dragMove(message.clientX - message.startX - ax)
     })
@@ -47,14 +53,17 @@ export default class Carousel extends Component {
       this.dragEnd(message.clientX - message.startX - ax);
     })
     this.root.addEventListener('flick', (message) => {
-      // console.log('flick', message);
-      // this[STATE].position += Math.sign(message.clientX - message.startX)
-      // this.move()
+      // console.log('flick-message:', message);
+      // const { velocity, clientX, startX } = message
+      // let dragX = clientX - startX
+      // dragX += Math.sign(dragX) * Math.round(velocity / 2) * this.width
+      // this.timeline.reset()
+      // this.timeline.start()
+      // this.move(dragX - ax);
+
     })
     this.root.addEventListener('end', message => {
-      console.log('eeeeeeeeeeeeeeeee');
       this.timeline.resume()
-
       this.initInterval();
     })
   }
@@ -89,10 +98,12 @@ export default class Carousel extends Component {
       this.timeline.add(new Animation(child.style, 'transform', startX, endX, this.duration * (1 - progress), 0, this.timingFunction, this.template))
     }
     this[STATE].position = (position + len) % len;
+    this.triggerEvent('change', { position: this[STATE].position })
+
   }
   move() {
     const len = this.carouselItems.length;
-    let currentIndex = this[STATE].position % len;
+    let currentIndex = ((this[STATE].position % len) + len) % len;
     let current = this.carouselItems[currentIndex];
     this.t = Date.now()
     {
@@ -109,7 +120,7 @@ export default class Carousel extends Component {
       const endX = -nextIndex * this.width
       this.timeline.add(new Animation(next.style, 'transform', startX, endX, this.duration, 0, this.timingFunction, this.template))
     }
-    // this.triggerEvent('change', { position: this[STATE].position })
+    this.triggerEvent('change', { position: this[STATE].position })
     this[STATE].position = currentIndex + 1;
 
     // console.log('---', this[STATE].position, current, next);
@@ -123,7 +134,6 @@ export default class Carousel extends Component {
       console.log('iiiiiiiiii');
       this.move()
     }, 3000);
-    console.log('================', this.handler);
   }
   render() {
     const dom = document.createElement('div');
@@ -140,6 +150,6 @@ export default class Carousel extends Component {
     }, 16)
   }
   triggerEvent(type, args) {
-    this[ATTRIBUTE][`on${type.replace(/^\s\S/, s => s.toUpperCase())}`](new CustomEvent(type, { detail: args }))
+    this[ATTRIBUTE][`on${type.replace(/^[\s\S]/, s => s.toUpperCase())}`](new CustomEvent(type, { detail: args }))
   }
 }
