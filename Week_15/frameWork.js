@@ -2,14 +2,17 @@ export const STATE = Symbol('state')
 export const ATTRIBUTE = Symbol('attribute')
 
 export class Component {
-  constructor(type) {
-    this.type = type;
+  constructor() {
     this[ATTRIBUTE] = Object.create(null);
     this[STATE] = Object.create(null);
+  }
+  render() {
+    return this.root
   }
   setAttribute(name, value) {
     this[ATTRIBUTE][name] = value;
   }
+
   appendChild(child) {
     child.mountTo(this.root);
   }
@@ -19,14 +22,24 @@ export class Component {
     }
     parent.appendChild(this.root);
   }
+  triggerEvent(type, args) {
+    this[ATTRIBUTE][`on${type.replace(/^[\s\S]/, s => s.toUpperCase())}`](new CustomEvent(type))
+  }
 }
 class ElementWrapper extends Component {
   constructor(type) {
-    super(type);
+    super();
+    this.root = document.createElement(type)
   }
+  setAttribute(name, value) {
+    // this[ATTRIBUTE][name] = value;
+    this.root.setAttribute(name, value)
+  }
+
 }
 class TextWrapper extends Component {
   constructor(content) {
+    super();
     this.root = document.createTextNode(content);
   }
 }
@@ -42,11 +55,18 @@ export function createElement(type, attributes, ...children) {
   for (const name in attributes) {
     element.setAttribute(name, attributes[name]);
   }
-  for (let child of children) {
-    if (typeof child === 'string') {
-      child = new TextWrapper(child);
+  let processChildren = (children) => {
+    for (let child of children) {
+      if (typeof child === 'object' && (child instanceof Array)) {
+        processChildren(child)
+        continue
+      }
+      if (typeof child === 'string') {
+        child = new TextWrapper(child);
+      }
+      element.appendChild(child);
     }
-    element.appendChild(child);
   }
+  processChildren(children)
   return element;
 }

@@ -36,7 +36,6 @@ export default class Carousel extends Component {
       let progress = (t > this.duration || this.t === 0) ? 0 : t / this.duration
       progress = progress - Math.floor(progress)
       ax = -this.timingFunction(progress) * this.width
-      console.log('progress', progress, ax);
     })
     this.root.addEventListener('tap', (message) => {
       this.triggerEvent('click', {
@@ -120,7 +119,7 @@ export default class Carousel extends Component {
       const endX = -nextIndex * this.width
       this.timeline.add(new Animation(next.style, 'transform', startX, endX, this.duration, 0, this.timingFunction, this.template))
     }
-    this.triggerEvent('change', { position: this[STATE].position })
+    // this.triggerEvent('change', { position: this[STATE].position })
     this[STATE].position = currentIndex + 1;
 
     // console.log('---', this[STATE].position, current, next);
@@ -131,7 +130,6 @@ export default class Carousel extends Component {
     }
     this.t = 0;
     this.handler = setInterval(() => {
-      console.log('iiiiiiiiii');
       this.move()
     }, 3000);
   }
